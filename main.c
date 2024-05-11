@@ -499,15 +499,12 @@ int main(int argc,char **argv) {
 			}
 
 			Snapshot new;
-			Snapshot old;
 
 			if(pid[i-1] == 0) // procesul copil pentru creearea snapshot-ului
 			{
-				old=readSnapshot(argv[i]);
+				//old=readSnapshot(argv[i]);
 				new=createSnapshot(argv[i],0);
-				printModifications(old,new,0);
-
-				printf("--- Analyze the potential malicious files in the directories --- \n\n");
+				//printModifications(old,new,0);
 
 				if(new.nrEntries>=0)
 				{
@@ -679,8 +676,9 @@ int main(int argc,char **argv) {
 		else{
 			printf("Child %d ended abnormally\n",i);
 		}
+
+
 			
 	}
 	return 0;
 }
-
