@@ -416,12 +416,15 @@ int main(int argc,char **argv) {
 	int okSafe=0;
 	int pozSafeDir=0;
 
+	Snapshot old[10];
+	Snapshot new;
+
 	if(argc>11)
 	{
 		perror("Prea multe argumente!\n");
 	}
 
-	for(int i=0;i<argc;i++)
+	for(int i=1;i<argc;i++)
 	{
 		if(strcmp(argv[i],"-o")==0)
 		{
@@ -454,12 +457,15 @@ int main(int argc,char **argv) {
 			}
 			continue;
 		}
+
+		old[i]=readSnapshot(argv[i]);
 	}
 
 	
 	int pfd[10][2]; //fiind mai multe procese in paralel am nevoie de un vector de pipe uri care sa le tina evidenta, pentru a vredea care pipe corespunde unui proces
 
 	pid_t pid[10]={0};
+	
 
 	for(int i=1;i<argc;i++)
 	{
@@ -481,12 +487,14 @@ int main(int argc,char **argv) {
 			exit(-1);
 		}
 
+
 		//creez pipe ul
 		if(pipe(pfd[i-1])==-1)
 		{
 			perror("Pipe creation failed.");
 			exit(-1);
 		}
+
 
 		if(S_ISDIR(st.st_mode))
 		{
@@ -498,7 +506,6 @@ int main(int argc,char **argv) {
 				exit(1);
 			}
 
-			Snapshot new;
 
 			if(pid[i-1] == 0) // procesul copil pentru creearea snapshot-ului
 			{
@@ -612,6 +619,7 @@ int main(int argc,char **argv) {
 				}
 				close(pfd[i-1][1]);
 
+			
 				//UPDATE crearea directorului din cod cu stat(daca returneaza -1 inseamna ca nu exista si trebuie creat)
 				if(okOut==1) //daca exista director de output in linia de comanda voi copia in el snapshot-urile
 				{
@@ -677,8 +685,15 @@ int main(int argc,char **argv) {
 			printf("Child %d ended abnormally\n",i);
 		}
 
-
-			
 	}
+
+	for(int i=1;i<argc;i++)
+	{
+		if(i==pozDir-1 || i==pozDir || i==pozSafeDir-1 || i==pozSafeDir) continue;
+
+		new=readSnapshot(argv[i]);
+		printModifications(old[i],new,0);
+	}
+
 	return 0;
 }
